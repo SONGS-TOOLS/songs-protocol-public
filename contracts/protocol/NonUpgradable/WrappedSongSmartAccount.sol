@@ -14,6 +14,9 @@ import "./../Interfaces/IMetadataModule.sol";
 import "./../Interfaces/IDistributorWalletFactory.sol";
 import "./../Interfaces/IWrappedSongSmartAccount.sol";
 import "./../Interfaces/IWSTokenManagement.sol";
+import "./../Interfaces/IRegistryModule.sol";
+import "./../Interfaces/IReleaseModule.sol";
+
 contract WrappedSongSmartAccount is
     Ownable,
     IERC1155Receiver,
@@ -27,7 +30,7 @@ contract WrappedSongSmartAccount is
     IERC20 public stablecoin;
     IProtocolModule public protocolModule;
     IMetadataModule public metadataModule;
-
+    IReleaseModule public releaseModule;
     uint256 public songSharesId;
     uint256 public wrappedSongTokenId;
 
@@ -84,28 +87,29 @@ contract WrappedSongSmartAccount is
     modifier onlyOwnerOrDistributor() {
         require(
             msg.sender == owner() ||
-                msg.sender == protocolModule.getWrappedSongDistributor(address(this)),
+                msg.sender == releaseModule.getWrappedSongDistributor(address(this)),
             "Caller is not owner or wrapped song distributor"
         );
         _;
     }
 
     constructor(
-        address _protocolModuleAddress
     ) Ownable(msg.sender) {
-        require(_protocolModuleAddress != address(0), "Invalid protocol module");
-        protocolModule = IProtocolModule(_protocolModuleAddress);
-        metadataModule = IMetadataModule(IProtocolModule(_protocolModuleAddress).metadataModule());
         _disableInitializers();
     }
 
     function initialize(
         address _stablecoinAddress,
         address _owner,
-        address /* _protocolModuleAddress */
+        address _protocolModuleAddress
     ) external override initializer {
+        require(_protocolModuleAddress != address(0), "Invalid protocol module address");
         require(_stablecoinAddress != address(0), "Invalid stablecoin address");
         require(_owner != address(0), "Invalid owner address");
+        
+        protocolModule = IProtocolModule(_protocolModuleAddress);
+        metadataModule = IMetadataModule(IProtocolModule(_protocolModuleAddress).metadataModule());
+        releaseModule = IRegistryModule(IProtocolModule(protocolModule).getRegistryModule()).releaseModule();
         
         _transferOwnership(_owner);
         stablecoin = IERC20(_stablecoinAddress);
@@ -430,11 +434,12 @@ contract WrappedSongSmartAccount is
     function migrateWrappedSong(
         address newMetadataAddress,
         address newWrappedSongAddress
-    ) external onlyOwner {
+    ) external {
         require(!migrated, "Contract already migrated");
         require(newWrappedSongAddress != address(0), "Invalid new wrapped song address");
         require(newMetadataAddress != address(0), "Invalid metadata address");
         require(address(wsTokenManagement) != address(0), "WSTokenManagement not set");
+
         require(
             protocolModule.isAuthorizedContract(msg.sender),
             "Caller not authorized"
@@ -444,22 +449,23 @@ contract WrappedSongSmartAccount is
         migrated = true;
 
         // Transfer WSTokenManagement ownership
-        wsTokenManagement.migrateWrappedSong(newWrappedSongAddress, newMetadataAddress);
+        wsTokenManagement.migrateWrappedSong( newMetadataAddress, newWrappedSongAddress);
 
         // Transfer any remaining stablecoin balance
         uint256 stablecoinBalance = stablecoin.balanceOf(address(this));
+        
         if (stablecoinBalance > 0) {
-            require(
-                stablecoin.transfer(newWrappedSongAddress, stablecoinBalance),
-                "Stablecoin transfer failed"
-            );
+            stablecoin.transfer(newWrappedSongAddress, stablecoinBalance);
         }
 
         // Transfer any remaining ETH balance
         uint256 remainingETH = address(this).balance;
+        
         if (remainingETH > 0) {
             (bool success, ) = newWrappedSongAddress.call{value: remainingETH}("");
-            require(success, "ETH transfer failed");
+            if (!success) {
+                revert("ETH transfer failed");
+            }
         }
 
         emit ContractMigrated(newWrappedSongAddress);

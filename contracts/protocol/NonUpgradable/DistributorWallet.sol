@@ -217,12 +217,13 @@ contract DistributorWallet is Ownable {
      * @param wrappedSong The address of the wrapped song
      */
     function confirmWrappedSongRelease(address wrappedSong) external onlyOwner {
+        require(!protocolModule.paused(), "Paused");
+        IReleaseModule releaseModule = IRegistryModule(protocolModule.getRegistryModule()).releaseModule();
         require(
-            protocolModule.getPendingDistributorRequests(wrappedSong) == address(this),
+            releaseModule.getPendingDistributorRequests(wrappedSong) == address(this),
             'Not the pending distributor'
         );
-
-        protocolModule.confirmWrappedSongRelease(wrappedSong);
+        releaseModule.confirmWrappedSongRelease(wrappedSong);
         managedWrappedSongs.push(wrappedSong);
 
         uint256 newWSIndex = managedWrappedSongs.length - 1;
@@ -232,12 +233,14 @@ contract DistributorWallet is Ownable {
     }
 
     function acceptWrappedSongForReview(address wrappedSong) external onlyOwner {
-        protocolModule.acceptWrappedSongForReview(wrappedSong);
+        IReleaseModule releaseModule = IRegistryModule(protocolModule.getRegistryModule()).releaseModule();
+        releaseModule.acceptWrappedSongForReview(wrappedSong);
         emit WrappedSongAcceptedForReview(wrappedSong);
     }
 
     function rejectWrappedSongRelease(address wrappedSong) external onlyOwner {
-        protocolModule.rejectWrappedSongRelease(wrappedSong);
+        IReleaseModule releaseModule = IRegistryModule(protocolModule.getRegistryModule()).releaseModule();
+        releaseModule.rejectWrappedSongRelease(wrappedSong);
         emit WrappedSongReleaseRejected(wrappedSong);
     }
 
@@ -289,11 +292,24 @@ contract DistributorWallet is Ownable {
                 epoch.timestamp
             );
             
+            // Mark as claimed regardless of balance
+            epochClaims[epochId][msg.sender][_wrappedSong] = true;
+
+            // Skip adding to total if balance was 0
+            if (balanceAtEpoch == 0) {
+                emit EpochRedeemed(
+                    _wrappedSong,
+                    msg.sender,
+                    epochId,
+                    0
+                );
+                continue;
+            }
+            
             uint256 wsAmount = getAmountForWS(epochId, wsIndex);
             uint256 amount = (wsAmount * balanceAtEpoch) / totalShares;
             
             totalAmount += amount;
-            epochClaims[epochId][msg.sender][_wrappedSong] = true;
 
             emit EpochRedeemed(
                 _wrappedSong,
@@ -303,8 +319,10 @@ contract DistributorWallet is Ownable {
             );
         }
 
-        require(totalAmount > 0, "Nothing to claim");
-        require(stablecoin.transfer(msg.sender, totalAmount), "Transfer failed");
+        // Only transfer if there's an amount to transfer
+        if (totalAmount > 0) {
+            require(stablecoin.transfer(msg.sender, totalAmount), "Transfer failed");
+        }
     }
 
     /**
@@ -401,19 +419,19 @@ contract DistributorWallet is Ownable {
      * @param isAuthentic The authenticity status to set
      */
     function setWrappedSongAuthenticity(address wrappedSong, bool isAuthentic) external onlyOwner {
+        require(!protocolModule.paused(), "Protocol Paused");
         require(
             wsRedeemIndexList[wrappedSong] < managedWrappedSongs.length,
             "Not a managed wrapped song"
         );
 
-        // Call ProtocolModule's setWrappedSongAuthenticity function directly
-        // The protocol module will handle the pause check and revert with EnforcedPause if needed
-        protocolModule.setWrappedSongAuthenticity(wrappedSong, isAuthentic);
+        IIdentityModule identityModule = IRegistryModule(protocolModule.getRegistryModule()).identityModule();
+        identityModule.setWrappedSongAuthenticity(wrappedSong, isAuthentic);
     }
 
     /**
      * @dev Confirms a pending metadata update for a wrapped song
-     * @param wrappedSong The address of the wrapped song
+ram wrappedSong The address of the wrapped song
      */
     function confirmMetadataUpdate(address wrappedSong) external onlyOwner {
         require(
