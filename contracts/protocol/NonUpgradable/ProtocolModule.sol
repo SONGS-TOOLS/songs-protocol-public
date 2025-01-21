@@ -15,7 +15,6 @@ import "./../Interfaces/IRegistryModule.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-
 // +..................................................................................................+
 // -                                                                                                  -
 // =                                                                                                  =
@@ -61,6 +60,9 @@ contract ProtocolModule is Ownable, Pausable, ReentrancyGuard {
 
   // Add new state variable
   IMetadataRenderer public metadataRenderer;
+
+  // Add new state variable near other URI-related variables
+  string public externalUrlBase;
 
   modifier onlyOwnerOrAuthorized() {
     require(
@@ -130,6 +132,8 @@ contract ProtocolModule is Ownable, Pausable, ReentrancyGuard {
     address indexed wrappedSong
   );
 
+  // Add new event
+  event ExternalUrlBaseUpdated(string newExternalUrlBase);
 
   /**
    * @dev Initializes the contract with the given parameters.
@@ -397,6 +401,14 @@ contract ProtocolModule is Ownable, Pausable, ReentrancyGuard {
     return baseURI;
   }
 
+  /**
+   * @dev Gets the current external URL base
+   * @return The current external URL base
+   */
+  function getExternalUrlBase() external view returns (string memory) {
+    return externalUrlBase;
+  }
+
   // Update getter function
   function getLegalContractMetadata() external view returns (address) {
     return address(legalContractMetadata);
@@ -426,7 +438,13 @@ contract ProtocolModule is Ownable, Pausable, ReentrancyGuard {
    * Wrapped Song Owner
    *************************************************************************/
 
-  // Add function to render token URI
+  /**
+   * @dev Renders the token URI for a wrapped song.
+   * @param metadata The metadata of the wrapped song.
+   * @param tokenId The ID of the token.
+   * @param wrappedSong The address of the wrapped song.
+   * @return The token URI as a string.
+   */
   function renderTokenURI(
     IMetadataModule.Metadata memory metadata,
     uint256 tokenId,
@@ -443,9 +461,31 @@ contract ProtocolModule is Ownable, Pausable, ReentrancyGuard {
         tokenId,
         wrappedSong,
         baseURI,
+        externalUrlBase,
         IProtocolModule(address(this))
       );
   }
+
+  /**
+   * @dev Renders the contract URI for a wrapped song.
+   * @param metadata The metadata of the wrapped song.
+   * @return The contract URI as a string.
+   */
+  function renderContractURI(
+    IMetadataModule.Metadata memory metadata,
+    address wrappedSong
+  ) external view returns (string memory) {
+    return metadataRenderer.composeContractURI(
+        metadata,
+        baseURI,
+        externalUrlBase,
+        wrappedSong
+    );
+  }
+
+    /**************************************************************************
+   * Globals
+   *************************************************************************/
 
     /**
    * @dev Sets the base URI for metadata resources
@@ -454,11 +494,12 @@ contract ProtocolModule is Ownable, Pausable, ReentrancyGuard {
   function setBaseURI(string memory _baseURI) external onlyOwner {
     baseURI = _baseURI;
   }
-  
 
-  /**************************************************************************
-   * Globals
-   *************************************************************************/
+    // Add new setter function
+  function setExternalUrlBase(string memory _externalUrlBase) external onlyOwner {
+    externalUrlBase = _externalUrlBase;
+    emit ExternalUrlBaseUpdated(_externalUrlBase);
+  }
 
   receive() external payable {}
 }

@@ -6,7 +6,6 @@ interface IMetadataModule {
         string name;
         string description;
         string image;
-        string externalUrl;
         string animationUrl;
         string attributesIpfsHash;
     }
@@ -24,4 +23,5 @@ interface IMetadataModule {
     function removeMetadata(address wrappedSong) external;
     function withdrawAccumulatedFees(address token, address recipient) external;
     function getWrappedSongMetadata(address wrappedSong) external view returns (Metadata memory);
+    function getContractURI(address wrappedSong) external view returns (string memory);
 }

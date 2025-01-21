@@ -10,15 +10,13 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./../Interfaces/IRegistryModule.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-
 contract WrappedSongFactory is Ownable {
     using Clones for address;
     using SafeERC20 for IERC20;
 
-    IProtocolModule public immutable protocolModule;
-    
-    address public immutable wrappedSongTemplate;
-    address public immutable wsTokenTemplate;
+    IProtocolModule public protocolModule;
+    address public wrappedSongTemplate;
+    address public wsTokenTemplate;
 
     mapping(address => uint256) public accumulatedFees;
 
@@ -31,6 +29,14 @@ contract WrappedSongFactory is Ownable {
         IMetadataModule.Metadata metadata
     );
 
+    event WrappedSongMigrated(
+        address indexed oldWrappedSong,
+        address indexed newWrappedSong,
+        address indexed owner,
+        address stablecoin,
+        address wsTokenManagement
+    );
+
     event FeesWithdrawn(address indexed token, address indexed recipient, uint256 amount);
 
     event CreationFeeCollected(address indexed wrappedSong, address indexed token, uint256 amount);
@@ -38,14 +44,46 @@ contract WrappedSongFactory is Ownable {
     // Add a reference to the ModuleRegistry
     IRegistryModule public registryModule;
 
-    constructor(
-        address _wrappedSongTemplate,
-        address _wsTokenTemplate,
-        address _protocolModule    
-    ) Ownable(msg.sender) {
-        wrappedSongTemplate = _wrappedSongTemplate;
-        wsTokenTemplate = _wsTokenTemplate;
-        protocolModule = IProtocolModule(_protocolModule);
+    // Add events for updates
+    event WrappedSongTemplateUpdated(address indexed oldTemplate, address indexed newTemplate);
+    event WSTokenTemplateUpdated(address indexed oldTemplate, address indexed newTemplate);
+    event ProtocolModuleUpdated(address indexed oldModule, address indexed newModule);
+
+    constructor() Ownable(msg.sender) {}
+
+    // Add setter functions
+    function setWrappedSongTemplate(address _newTemplate) external onlyOwner {
+        _setWrappedSongTemplate(_newTemplate);
+    }
+
+    function setWSTokenTemplate(address _newTemplate) external onlyOwner {
+        _setWSTokenTemplate(_newTemplate);
+    }
+
+    function setProtocolModule(address _newModule) external onlyOwner {
+        _setProtocolModule(_newModule);
+    }
+
+    // Internal setter functions with validation
+    function _setWrappedSongTemplate(address _newTemplate) internal {
+        require(_newTemplate != address(0), "Invalid wrapped song template");
+        address oldTemplate = wrappedSongTemplate;
+        wrappedSongTemplate = _newTemplate;
+        emit WrappedSongTemplateUpdated(oldTemplate, _newTemplate);
+    }
+
+    function _setWSTokenTemplate(address _newTemplate) internal {
+        require(_newTemplate != address(0), "Invalid WS token template");
+        address oldTemplate = wsTokenTemplate;
+        wsTokenTemplate = _newTemplate;
+        emit WSTokenTemplateUpdated(oldTemplate, _newTemplate);
+    }
+
+    function _setProtocolModule(address _newModule) internal {
+        require(_newModule != address(0), "Invalid protocol module");
+        address oldModule = address(protocolModule);
+        protocolModule = IProtocolModule(_newModule);
+        emit ProtocolModuleUpdated(oldModule, _newModule);
     }
 
     function _handleCreationFee() internal {
@@ -157,6 +195,86 @@ contract WrappedSongFactory is Ownable {
 
         return newWrappedSongSmartAccount;
     }
+
+
+    function migrateWrappedSong(address oldWrappedSong_, address oldMetadataModule_) external payable returns (address) {
+        // Get and migrate metadata
+        // Verify addresses are not zero
+        require(oldWrappedSong_ != address(0), "Invalid wrapped song address");
+        require(oldMetadataModule_ != address(0), "Invalid metadata module address");
+
+        IMetadataModule metadataModule = IRegistryModule(protocolModule.getRegistryModule()).metadataModule();
+        IMetadataModule oldMetadataModule = IMetadataModule(oldMetadataModule_);
+
+        // Verify old wrapped song has metadata in old metadata module
+        require(bytes(oldMetadataModule.getWrappedSongMetadata(oldWrappedSong_).name).length > 0, "Wrapped song does not exist in old metadata module");
+        // Check if protocol is paused
+        require(!protocolModule.paused(), "Protocol is paused");
+
+        // Verify ownership
+        address currentOwner = IWrappedSongSmartAccount(oldWrappedSong_).owner();
+        require(currentOwner == msg.sender, string(abi.encodePacked(
+            "Invalid owner. Expected: ", Strings.toHexString(msg.sender),
+            " Got: ", Strings.toHexString(currentOwner)
+        )));
+
+        // Get information from old wrapped song
+        IWrappedSongSmartAccount oldSong = IWrappedSongSmartAccount(oldWrappedSong_);
+        
+        // Check if already migrated
+        require(!oldSong.migrated(), "Song already migrated");
+
+        // Get stablecoin and WSToken addresses
+        address stablecoin = address(oldSong.stablecoin());
+        address wsTokenManagementAddr = oldSong.getWSTokenManagementAddress();
+        
+        // Verify WSToken exists
+        require(wsTokenManagementAddr != address(0), "Invalid WSToken address");
+
+        // Create and initialize new wrapped song instance
+        address newWrappedSongSmartAccount = wrappedSongTemplate.clone();
+        IWrappedSongSmartAccount(newWrappedSongSmartAccount).initialize(
+            stablecoin,
+            msg.sender,
+            address(protocolModule)
+        );
+
+        // Set protocol relationships
+        protocolModule.setWSTokenFromProtocol(wsTokenManagementAddr);
+        protocolModule.setSmartAccountToWSToken(
+            newWrappedSongSmartAccount,
+            wsTokenManagementAddr
+        );
+        protocolModule.setOwnerWrappedSong(
+            msg.sender,
+            newWrappedSongSmartAccount
+        );
+
+        // Set WSTokenManagement
+        IWrappedSongSmartAccount(newWrappedSongSmartAccount).setWSTokenManagement(wsTokenManagementAddr);
+
+        IMetadataModule.Metadata memory oldMetadata = oldMetadataModule.getWrappedSongMetadata(oldWrappedSong_);
+        // Create new metadata
+        IRegistryModule(protocolModule.getRegistryModule()).metadataModule().createMetadata(
+            newWrappedSongSmartAccount,
+            oldMetadata
+        );
+
+        // Migrate the old wrapped song
+        oldSong.migrateWrappedSong(address(metadataModule), newWrappedSongSmartAccount);
+
+        emit WrappedSongMigrated(
+            oldWrappedSong_,
+            newWrappedSongSmartAccount,
+            msg.sender,
+            stablecoin,
+            wsTokenManagementAddr
+        );
+
+        return newWrappedSongSmartAccount;
+    }  
+
+
 
     function isValidMetadata(
         IMetadataModule.Metadata memory metadata

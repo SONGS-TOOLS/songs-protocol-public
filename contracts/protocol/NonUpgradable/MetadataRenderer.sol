@@ -5,13 +5,18 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import "./../Interfaces/IMetadataModule.sol";
 import "./../Interfaces/IProtocolModule.sol";
 import "./../Interfaces/IRegistryModule.sol";
+
 contract MetadataRenderer {
+
+
+    
     /**
      * @dev Composes the token URI from the metadata and token ID.
      * @param metadata The metadata of the wrapped song.
      * @param tokenId The ID of the token.
      * @param wrappedSongAddress The address of the wrapped song.
      * @param baseURI The base URI for the protocol.
+     * @param externalUrlBase The external URL base for the protocol.
      * @param protocolModule The protocol module interface to fetch registry codes.
      * @return The composed token URI as a string.
      */
@@ -20,6 +25,7 @@ contract MetadataRenderer {
         uint256 tokenId, 
         address wrappedSongAddress,
         string memory baseURI,
+        string memory externalUrlBase,
         IProtocolModule protocolModule
     ) external view returns (string memory) {
         require(bytes(baseURI).length > 0, "Base URI not set");
@@ -36,24 +42,24 @@ contract MetadataRenderer {
             tokenType = unicode"§"; 
             finalImageData = string(abi.encodePacked(baseURI, metadata.image));
             description = string(abi.encodePacked(
-                "These are the SongShares representing your share on the royalty earnings of the Wrapped Song",
-                addressToString(wrappedSongAddress),
+                "These are the SongShares that represent your ownership stake in the royalty earnings of the Song ",
+                metadata.name,
                 "."
             ));
         } else if (tokenId == 2) {
             tokenType = unicode"⟳";
             finalImageData = string(abi.encodePacked(baseURI, metadata.image));
             description = string(abi.encodePacked(
-                "This is a Buyout Token for the Wrapped Song ",
-                addressToString(wrappedSongAddress),
+                "This token grants you access to download a high-quality version of the song ",
+                metadata.name,
                 "."
             ));
         } else if (tokenId >= 3) {
             tokenType = unicode"📄";
             finalImageData = string(abi.encodePacked(baseURI, metadata.image));
             description = string(abi.encodePacked(
-                "This is a Legal Contract Token for the Wrapped Song ",
-                addressToString(wrappedSongAddress),
+                "This is a Legal Contract Document for the song ",
+                metadata.name,
                 "."
             ));
         }
@@ -73,7 +79,7 @@ contract MetadataRenderer {
                 '{"name": "', tokenType, ' ', metadata.name, '",',
                 '"description": "', description, '",',
                 '"image": "', finalImageData, '",',
-                '"external_url": "', metadata.externalUrl, '",',
+                '"external_url": "', string(abi.encodePacked(externalUrlBase, "wrapped-songs/", addressToString(wrappedSongAddress))), '",',
                 '"animation_url": "', string(abi.encodePacked(baseURI, metadata.animationUrl)), '",',
                 '"attributes": "', string(abi.encodePacked(baseURI, metadata.attributesIpfsHash)), '",',
                 registryCodes, ',',
@@ -140,5 +146,35 @@ contract MetadataRenderer {
             '"isAuthentic": ', isAuthentic ? 'true' : 'false',
             '}'
         ));
+    }
+
+    /**
+     * @dev Composes the contract-level metadata URI.
+     * @param metadata The metadata of the wrapped song.
+     * @param baseURI The base URI for the protocol.
+     * @return The composed contract URI as a string.
+     */
+    function composeContractURI(
+        IMetadataModule.Metadata memory metadata,
+        string memory baseURI,
+        string memory externalUrlBase,
+        address wrappedSongAddress
+    ) external pure returns (string memory) {
+        require(bytes(baseURI).length > 0, "Base URI not set");
+        
+        string memory finalImageData = string(abi.encodePacked(baseURI, metadata.image));
+        
+        string memory json = Base64.encode(
+            bytes(string(abi.encodePacked(
+                '{',
+                '"name": "SONGS: ', metadata.name, '",',
+                '"description": "', metadata.description, '",',
+                '"image": "', finalImageData, '",',
+                '"external_link": "', string(abi.encodePacked(externalUrlBase, "wrapped-songs/", addressToString(wrappedSongAddress))), '"',
+                '}'
+            )))
+        );
+
+        return string(abi.encodePacked("data:application/json;base64,", json));
     }
 } 
