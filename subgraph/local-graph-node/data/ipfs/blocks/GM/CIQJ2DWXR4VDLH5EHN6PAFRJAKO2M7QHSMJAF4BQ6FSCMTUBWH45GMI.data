@@ -1,0 +1,240 @@
+
+×;Ï;dataSources:
+  - kind: ethereum
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmerZ4f2qggmKM3SmRzTS5sU4PKh4Zzh5VALejEtQ2bD9q
+          name: ProtocolModule
+        - file:
+            /: /ipfs/QmT68ezueBgSMh8RwuhqHdCAssk6QLRrxk9S3jYPdEU97J
+          name: WrappedSongSmartAccount
+      apiVersion: 0.0.7
+      entities:
+        - WrappedSong
+        - MetadataUpdateRequest
+        - Distributor
+      eventHandlers:
+        - event: >-
+            WrappedSongReleaseRequested(indexed address,indexed address,indexed
+            address)
+          handler: handleWrappedSongReleaseRequested
+        - event: 'WrappedSongReleased(indexed address,indexed address)'
+          handler: handleWrappedSongReleased
+        - event: 'WrappedSongReleaseRejected(indexed address,indexed address)'
+          handler: handleWrappedSongReleaseRejected
+        - event: 'DistributorAcceptedReview(indexed address,indexed address)'
+          handler: handleDistributorAcceptedReview
+        - event: 'ReviewPeriodExpired(indexed address,indexed address)'
+          handler: handleReviewPeriodExpired
+        - event: 'WrappedSongAuthenticitySet(indexed address,bool)'
+          handler: handleWrappedSongAuthenticitySet
+      file:
+        /: /ipfs/QmQuaFP9zb6gqxa5FzPhCoDNMw6QMS5XFHGcbmpMQG5L8w
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: ProtocolModule
+    network: localhost
+    source:
+      abi: ProtocolModule
+      address: '0x0165878A594ca255338adfa4d48449f69242Eb8F'
+      startBlock: 1
+  - kind: ethereum
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmRUguwDqQebCBZoXfRVNEb6LCAsZFLNBMaU5hRozA2FjD
+          name: WrappedSongFactory
+      apiVersion: 0.0.7
+      entities:
+        - WrappedSong
+        - WSTokenManagement
+      eventHandlers:
+        - event: >-
+            WrappedSongCreated(indexed address,indexed
+            address,address,address,uint256,(string,string,string,string,string,string))
+          handler: handleWrappedSongCreated
+      file:
+        /: /ipfs/QmVtnb9f842XP37WPSvpH8PBhs7XV1Gxtgvn5zy7hPpCQk
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: WrappedSongFactory
+    network: localhost
+    source:
+      abi: WrappedSongFactory
+      address: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e'
+      startBlock: 1
+  - kind: ethereum
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmQADgMa1LGKjYGQxWuNwMxoP8UixD8HbChuB98WtedkWg
+          name: DistributorWalletFactory
+      apiVersion: 0.0.7
+      entities:
+        - Distributor
+      eventHandlers:
+        - event: 'DistributorWalletCreated(indexed address,address,address)'
+          handler: handleDistributorWalletCreated
+      file:
+        /: /ipfs/Qmc6xhSHXnKF4Lua7HLyqCm6huT54eCfBmcvLQ7htYG3kA
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: distributorWalletFactory
+    network: localhost
+    source:
+      abi: DistributorWalletFactory
+      address: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
+      startBlock: 1
+  - kind: ethereum
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmXefrwQjXbR8T6Tz9X2M2yZVSYmDqS8Pza3eqRugYy84a
+          name: MetadataModule
+      apiVersion: 0.0.7
+      entities:
+        - WrappedSong
+        - MetadataUpdateRequest
+        - SharesMetadata
+        - SongMetadata
+      eventHandlers:
+        - event: >-
+            MetadataUpdateRequested(indexed
+            address,(string,string,string,string,string,string))
+          handler: handleMetadataUpdateRequested
+        - event: >-
+            MetadataUpdated(indexed
+            address,(string,string,string,string,string,string))
+          handler: handleMetadataUpdated
+        - event: MetadataUpdateRejected(indexed address)
+          handler: handleMetadataUpdateRejected
+      file:
+        /: /ipfs/Qmc4XMYRFq3eH1EdfKrxyGP6xNhoiwQkXoi1cE41UfL94b
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: metadataModule
+    network: localhost
+    source:
+      abi: MetadataModule
+      address: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
+      startBlock: 1
+  - kind: ethereum
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmP2VpwN7GnvLeuf8tKMRyrZcHaDNz55wgv4Fh548KfEd5
+          name: SongSharesMarketPlace
+      apiVersion: 0.0.7
+      entities:
+        - WrappedSong
+        - Sale
+        - SaleOffer
+        - WSTokenManagement
+      eventHandlers:
+        - event: >-
+            SharesSaleStarted(indexed address,indexed
+            address,uint256,uint256,uint256,address)
+          handler: handleSharesSaleStarted
+        - event: >-
+            SharesSold(indexed address,indexed address,indexed
+            address,uint256,uint256,address)
+          handler: handleSharesSold
+        - event: SharesSaleEnded(indexed address)
+          handler: handleSharesSaleEnded
+        - event: 'FundsWithdrawn(indexed address,indexed address,uint256)'
+          handler: handleFundsWithdrawn
+      file:
+        /: /ipfs/QmY6nSYnBC1yLPc65jzoWXYJeWfDuHZJN5uuGoDnWxGATv
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: SongSharesMarketPlace
+    network: localhost
+    source:
+      abi: SongSharesMarketPlace
+      address: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
+      startBlock: 1
+schema:
+  file:
+    /: /ipfs/QmcqasKf7r2wQe3yP8JxtnNKieeubAfti3VWRrj8FkBtn6
+specVersion: 0.0.5
+templates:
+  - kind: ethereum/contract
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmQqpnxo7JzUEKD7MH1LqqQ5kUBBXXrRbKYJiXX72Nx3iW
+          name: DistributorWallet
+      apiVersion: 0.0.7
+      entities:
+        - Distributor
+        - DistributorEpoch
+      eventHandlers:
+        - event: 'NewRevenueEpoch(indexed address,indexed uint256,uint256,uint256)'
+          handler: handleNewRevenueEpoch
+      file:
+        /: /ipfs/QmVzsE3FB1Pxkot67X8eN8Kfe5mEqDXkjxcAZT1dU5GjSz
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: DistributorWallet
+    network: localhost
+    source:
+      abi: DistributorWallet
+  - kind: ethereum/contract
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmT68ezueBgSMh8RwuhqHdCAssk6QLRrxk9S3jYPdEU97J
+          name: WrappedSongSmartAccount
+      apiVersion: 0.0.7
+      entities:
+        - WrappedSong
+      file:
+        /: /ipfs/QmTqybDguMfE8e6y1nuqUsC5fbs1m5ZMg7JbbUj7f1a2Ke
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: WrappedSongSmartAccount
+    network: localhost
+    source:
+      abi: WrappedSongSmartAccount
+  - kind: file/ipfs
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmT68ezueBgSMh8RwuhqHdCAssk6QLRrxk9S3jYPdEU97J
+          name: WrappedSongSmartAccount
+      apiVersion: 0.0.7
+      entities:
+        - Attributes
+      file:
+        /: /ipfs/Qmcu2x7sTraGLbqS1ZLrnotBzS5D5vXTw8PphL8AwrYvoh
+      handler: handleAttributes
+      language: wasm/assemblyscript
+    name: Attributes
+    network: localhost
+  - kind: ethereum/contract
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmVZHTeaireZurC6V1JeK85HDokjxPYKMBuZhRT6aWU7Xt
+          name: WSTokenManagement
+      apiVersion: 0.0.7
+      entities:
+        - WrappedSong
+        - SaleOffer
+        - Sale
+        - WSTokenManagement
+      eventHandlers:
+        - event: >-
+            TransferSingle(indexed address,indexed address,indexed
+            address,uint256,uint256)
+          handler: handleTransferSingle
+      file:
+        /: /ipfs/QmTLK9QjZEQBUtKn8cLgAHaWKNhf3hpigZpyQ2V5n5g8yf
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: WSTokenManagement
+    network: localhost
+    source:
+      abi: WSTokenManagement
+Ï;

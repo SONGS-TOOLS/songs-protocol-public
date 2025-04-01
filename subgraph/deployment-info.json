@@ -1,0 +1,40 @@
+{
+  "network": "baseSepolia",
+  "startBlock": 20497345,
+  "contracts": {
+    "protocolModule": {
+      "address": "0x2a671e056E89D6DC94C1122278270F6d19847Ee4",
+      "startBlock": 20497355
+    },
+    "wrappedSongFactory": {
+      "address": "0x34Bcf8d22030F088b6B44Ef671D58cF0640232c2",
+      "startBlock": 20497373
+    },
+    "wrappedSongTemplate": {
+      "address": "0x00FBC328e93e6473c9187f980b5550C200c2fa0C"
+    },
+    "wsTokenTemplate": {
+      "address": "0xb398b44FBB873CBDCA0f2Ec0071f4739aAA8AD19"
+    },
+    "metadataModule": {
+      "address": "0x03a336F9cd7f1a4D804E3D68076BBd016158342c",
+      "startBlock": 20497349
+    },
+    "legalContractMetadata": {
+      "address": "0x47a69273eFf5EAD33CBB2AEf0AB399Af6fAe8d40",
+      "startBlock": 20497352
+    },
+    "metadataRenderer": {
+      "address": "0xcDF58002DC7Dc02292944a6d242677DaB0D2DbeD",
+      "startBlock": 20497345
+    },
+    "songSharesMarketPlace": {
+      "address": "0x9Fc221D5240ea5422a75c32d2026Bb12CA47d05a",
+      "startBlock": 20497359
+    },
+    "buyoutTokenMarketPlace": {
+      "address": "0x6c1301DF4e63fdD884Dd666a4924F2D3eE24b2A5",
+      "startBlock": 20497362
+    }
+  }
+}

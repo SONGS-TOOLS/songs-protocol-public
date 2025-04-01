@@ -1,0 +1,143 @@
+type ProtocolConfig @entity {
+  id: ID!
+  reviewPeriodDays: Int!
+}
+
+type WrappedSong @entity {
+  id: Bytes!
+  address: Bytes!
+  creator: Bytes!
+  status: String!
+  stablecoinAddress: Bytes
+  createdAt: BigInt!
+  songMetadata: SongMetadata
+  sharesMetadata: SharesMetadata
+  distributor: Distributor
+  releaseDistributor: Distributor
+  pendingMetadataUpdate: MetadataUpdateRequest
+  releasedAt: BigInt
+  releaseRequest: ReleaseRequest
+  totalShares: BigInt! # We'll keep this and remove sharesAmount
+  creatorShares: BigInt!
+  shareholders: [WrappedSongShareHolder!]! @derivedFrom(field: "wrappedSong")
+  wsTokenManagement: WSTokenManagement!
+  isAuthentic: Boolean!
+  wsIndex: BigInt
+}
+
+type Attributes @entity {
+  id: ID!
+  attributes: String
+}
+
+type SongMetadata @entity {
+  id: ID!
+  image: String!
+  externalUrl: String!
+  name: String!
+  description: String!
+  attributesIpfsHash: String!
+  attributes: Attributes
+  animationUrl: String!
+}
+
+type SharesMetadata @entity {
+  id: ID!
+  image: String!
+  name: String!
+}
+
+type MetadataUpdateRequest @entity {
+  id: Bytes!
+  songMetadata: SongMetadata!
+  sharesMetadata: SharesMetadata!
+  status: String!
+  createdAt: BigInt!
+  confirmedAt: BigInt
+}
+
+type Distributor @entity {
+  id: Bytes!
+  address: Bytes!
+  owner: Bytes!
+  wrappedSongs: [WrappedSong!]! @derivedFrom(field: "distributor")
+  releasedWrappedSongs: [WrappedSong!]!
+    @derivedFrom(field: "releaseDistributor")
+  epochs: [DistributorEpoch!]! @derivedFrom(field: "distributor")
+  currentEpochId: BigInt!
+  currentWSIndex: BigInt!
+  stablecoinAddress: Bytes!
+}
+
+type DistributorEpoch @entity {
+  id: String!
+  epochId: BigInt!
+  totalAmount: BigInt!
+  timestamp: BigInt!
+  distributor: Distributor!
+}
+
+type ReleaseRequest @entity {
+  id: Bytes!
+  status: String!
+  createdAt: BigInt!
+  reviewStartedAt: BigInt
+  reviewEndTime: BigInt
+}
+
+type WSTokenManagement @entity {
+  id: Bytes!
+  wrappedSong: WrappedSong!
+  saleActive: Boolean!
+  saleOffer: SaleOffer
+  sales: [Sale!]! @derivedFrom(field: "wsTokenManagement")
+  shareHolders: [ShareHolder!]! @derivedFrom(field: "wsTokenManagement")
+}
+
+type Sale @entity {
+  id: Bytes!
+  buyer: Bytes!
+  amount: BigInt!
+  pricePerShare: BigInt!
+  timestamp: BigInt!
+  currency: Bytes!
+  wsTokenManagement: WSTokenManagement!
+}
+
+type SaleOffer @entity {
+  id: Bytes!
+  initialAmount: BigInt!
+  maxPerWallet: BigInt!
+  amount: BigInt!
+  pricePerShare: BigInt!
+  currency: Bytes!
+  createdAt: BigInt!
+}
+
+type ShareHolder @entity {
+  id: Bytes! # Composite key: wrappedSongAddress-holderAddress
+  wrappedSongs: [WrappedSongShareHolder!]! @derivedFrom(field: "shareHolder")
+  # holder: Bytes!
+  shares: BigInt!
+  lastUpdated: BigInt!
+  totalEarnings: BigInt!
+  unclaimedEarnings: BigInt!
+  redeemedEarnings: BigInt!
+  wsTokenManagement: WSTokenManagement!
+}
+
+# type Checkpoint @entity {
+#   id: Bytes!
+#   timestamp: BigInt!
+#   value: BigInt!
+#   wrappedSongShareHolder: WrappedSongShareHolder!
+# }
+
+type WrappedSongShareHolder @entity {
+  id: Bytes!
+  wrappedSong: WrappedSong!
+  shareHolder: ShareHolder!
+  shares: BigInt!
+  lastEpochClaimed: BigInt!
+  # checkpoints: [Checkpoint!]! @derivedFrom(field: "wrappedSongShareHolder")
+}

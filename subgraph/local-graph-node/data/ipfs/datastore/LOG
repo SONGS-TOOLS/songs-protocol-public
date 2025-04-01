@@ -1,0 +1,80 @@
+=============== Dec 3, 2024 (UTC) ===============
+16:45:00.107882 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:45:00.114261 db@open opening
+16:45:00.117438 version@stat F·[] S·0B[] Sc·[]
+16:45:00.122632 db@janitor F·2 G·0
+16:45:00.122994 db@open done T·8.4475ms
+16:45:00.241961 db@close closing
+16:45:00.242544 db@close done T·581.375µs
+=============== Dec 3, 2024 (UTC) ===============
+16:45:00.250987 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:45:00.252692 version@stat F·[] S·0B[] Sc·[]
+16:45:00.253664 db@open opening
+16:45:00.254129 journal@recovery F·1
+16:45:00.254976 journal@recovery recovering @1
+16:45:00.256493 memdb@flush created L0@2 N·12 S·1KiB "/pi..MTk,v10":"/pr..crQ,v12"
+16:45:00.257171 version@stat F·[1] S·1KiB[1KiB] Sc·[0.25]
+16:45:00.266286 db@janitor F·3 G·0
+16:45:00.266527 db@open done T·12.805792ms
+16:45:00.273986 db@close closing
+16:45:00.274453 db@close done T·465.791µs
+=============== Dec 3, 2024 (UTC) ===============
+16:45:00.334986 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:45:00.336015 version@stat F·[1] S·1KiB[1KiB] Sc·[0.25]
+16:45:00.336101 db@open opening
+16:45:00.336360 journal@recovery F·1
+16:45:00.336605 journal@recovery recovering @3
+16:45:00.338054 memdb@flush created L0@5 N·6 S·1KiB "/F5..2MQ,v19":"/pi..rty,v14"
+16:45:00.338691 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+16:45:00.340768 db@janitor F·4 G·0
+16:45:00.340826 db@open done T·4.666ms
+16:45:00.344460 db@close closing
+16:45:00.344895 db@close done T·507.208µs
+=============== Dec 3, 2024 (UTC) ===============
+16:45:00.414702 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:45:00.416277 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+16:45:00.416534 db@open opening
+16:45:00.417227 journal@recovery F·1
+16:45:00.417636 journal@recovery recovering @6
+16:45:00.418508 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+16:45:00.424654 db@janitor F·4 G·0
+16:45:00.424756 db@open done T·7.993084ms
+16:45:00.431693 db@close closing
+16:45:00.432349 db@close done T·654.917µs
+=============== Dec 3, 2024 (UTC) ===============
+16:45:00.537701 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:45:00.540044 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+16:45:00.540231 db@open opening
+16:45:00.540896 journal@recovery F·1
+16:45:00.541219 journal@recovery recovering @8
+16:45:00.541985 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+16:45:00.547908 db@janitor F·4 G·0
+16:45:00.548097 db@open done T·7.754083ms
+=============== Dec 3, 2024 (UTC) ===============
+17:10:00.132072 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+17:10:00.134406 version@stat F·[2] S·2KiB[2KiB] Sc·[0.50]
+17:10:00.134555 db@open opening
+17:10:00.134932 journal@recovery F·1
+17:10:00.139453 journal@recovery recovering @10
+17:10:00.148974 memdb@flush created L0@12 N·420 S·33KiB "/F5..2MQ,v38":"/pr..OTE,v381"
+17:10:00.150329 version@stat F·[3] S·36KiB[36KiB] Sc·[0.75]
+17:10:00.154062 db@janitor F·5 G·0
+17:10:00.154601 db@open done T·19.95ms
+=============== Feb 14, 2025 (UTC) ===============
+21:29:17.348750 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+21:29:17.350568 version@stat F·[3] S·36KiB[36KiB] Sc·[0.75]
+21:29:17.350779 db@open opening
+21:29:17.353124 journal@recovery F·1
+21:29:17.353719 journal@recovery recovering @13
+21:29:17.360535 memdb@flush created L0@15 N·858 S·84KiB "/F5..2MQ,v1299":"/pr..OTE,v596"
+21:29:17.362032 version@stat F·[4] S·120KiB[120KiB] Sc·[1.00]
+21:29:17.366880 db@janitor F·6 G·0
+21:29:17.367500 db@open done T·16.616542ms
+21:29:17.368147 table@compaction L0·4 -> L1·0 S·120KiB Q·1300
+21:29:17.377671 table@build created L1@18 N·574 S·74KiB "/F5..2MQ,v1299":"/pr..OTE,v1122"
+21:29:17.378090 version@stat F·[0 1] S·74KiB[0B 74KiB] Sc·[0.00 0.00]
+21:29:17.383559 table@compaction committed F-3 S-45KiB Ke·0 D·722 T·15.317876ms
+21:29:17.384039 table@remove removed @15
+21:29:17.384844 table@remove removed @12
+21:29:17.385491 table@remove removed @5
+21:29:17.385988 table@remove removed @2
